@@ -206,6 +206,7 @@ pat = pat[["Year", "State", "Sex", "Race", "Grade"]]
 clf = tree.DecisionTreeClassifier()
 clf.fit(pas[["Year", "State", "Sex", "Race", "Grade"]],pas[['PE_attendance']])
 returnAcc = clf.predict(pat)
-print(returnAcc)
+accuracy = (np.sum(returnAcc == paty.values.flatten())/len(paty))*100
+print(accuracy)
 #Lets add some more feautres that might be useful.
 #TODO
