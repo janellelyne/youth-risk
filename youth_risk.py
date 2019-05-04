@@ -3,6 +3,8 @@ import matplotlib.pyplot as plt
 import numpy as np 
 import pandas as pd 
 from sklearn.preprocessing import LabelEncoder
+from sklearn.cluster import KMeans, AgglomerativeClustering
+from sklearn import tree
 import seaborn as sns
 
 sns.set(style="darkgrid")
@@ -131,6 +133,79 @@ ad = ad.apply(LabelEncoder().fit_transform)
 tu = tu.apply(LabelEncoder().fit_transform)
 wc = wc.apply(LabelEncoder().fit_transform)
 
+payg = pa[["Year", "Grade"]]
+kmeans = KMeans(n_clusters=2)
+kmeans.fit(payg)
+print(kmeans.cluster_centers_)
+kmeans = KMeans(n_clusters=10)
+kmeans.fit(payg)
+print(kmeans.cluster_centers_)
 
+adyg = ad[["Year", "Grade"]]
+kmeans = KMeans(n_clusters=2)
+kmeans.fit(adyg)
+print(kmeans.cluster_centers_)
+kmeans = KMeans(n_clusters=10)
+kmeans.fit(adyg)
+print(kmeans.cluster_centers_)
+
+tuyg = tu[["Year", "Grade"]]
+kmeans = KMeans(n_clusters=2)
+kmeans.fit(tuyg)
+print(kmeans.cluster_centers_)
+kmeans = KMeans(n_clusters=10)
+kmeans.fit(tuyg)
+print(kmeans.cluster_centers_)
+
+wcyg = wc[["Year", "Grade"]]
+kmeans = KMeans(n_clusters=2)
+kmeans.fit(wcyg)
+print(kmeans.cluster_centers_)
+kmeans = KMeans(n_clusters=10)
+kmeans.fit(wcyg)
+print(kmeans.cluster_centers_)
+
+paygsample = payg.sample(100)
+agglo = AgglomerativeClustering(n_clusters=2)
+agglo.fit(paygsample)
+print(agglo.labels_)
+
+
+agglo = AgglomerativeClustering(n_clusters=10)
+agglo.fit(paygsample)
+print(agglo.labels_)
+
+adygsample = adyg.sample(100)
+agglo = AgglomerativeClustering(n_clusters=2)
+agglo.fit(adygsample)
+print(agglo.labels_)
+agglo = AgglomerativeClustering(n_clusters=10)
+agglo.fit(adygsample)
+print(agglo.labels_)
+
+tuygsample = tuyg.sample(100)
+agglo = AgglomerativeClustering(n_clusters=2)
+agglo.fit(tuygsample)
+print(agglo.labels_)
+agglo = AgglomerativeClustering(n_clusters=10)
+agglo.fit(tuygsample)
+print(agglo.labels_)
+
+wcygsample = wcyg.sample(100)
+agglo = AgglomerativeClustering(n_clusters=2)
+agglo.fit(wcygsample)
+print(agglo.labels_)
+agglo = AgglomerativeClustering(n_clusters=10)
+agglo.fit(wcygsample)
+print(agglo.labels_)
+
+
+pas = pa.sample(200000)
+pat = pa.drop(pas.index)
+pat = pat[["Year", "State", "Sex", "Race", "Grade"]]
+clf = tree.DecisionTreeClassifier()
+clf.fit(pas[["Year", "State", "Sex", "Race", "Grade"]],pas[['PE_attendance']])
+returnAcc = clf.predict(pat)
+print(returnAcc)
 #Lets add some more feautres that might be useful.
 #TODO
