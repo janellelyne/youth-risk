@@ -406,7 +406,7 @@ prob_y_2 = clfg2.predict_proba(adt_train)
 prob_y_2 = [p[1] for p in prob_y_2]
 print(roc_auc_score(adty_train, prob_y_2))
 
-
+seed = 7
 #Now we are going to use the Bagging method with our decision tree classifiers
 #For 100 trees created from our dataset
 #Balanced data and entropy hueristic
