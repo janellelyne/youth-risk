@@ -5,6 +5,11 @@ import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 from sklearn.cluster import KMeans, AgglomerativeClustering
 from sklearn import tree
+from sklearn import model_selection
+from sklearn.ensemble import BaggingClassifier
+from sklearn.utils import resample
+from sklearn.metrics import roc_auc_score, accuracy_score
+from sklearn.model_selection import train_test_split
 import seaborn as sns
 
 sns.set(style="darkgrid")
@@ -46,7 +51,6 @@ sns.countplot(y='Location', data=df_all_locations, alpha=alpha)
 plt.title('Data by Location')
 plt.axvline(x=50, color='k')
 display(figure)
-
 
 #Lets plot the data by year
 df_all_years = alch_drug[['Year']].append([phys_act[['Year']], tobacco_use[['Year']], weight_ctrl[['Year']]])
@@ -267,44 +271,182 @@ ax.set_ylabel('State')
 plt.colorbar(scatter)
 display(figure)
 
+#Brute Force Trees
+
+#Predicting the PE_attendance type
 pas = pa.sample(150000)
 pat = pa.drop(pas.index)
 paty = pat[["PE_attendance"]]
-pat = pat[["Sex", "Year"]]
-clf = tree.DecisionTreeClassifier()
-clf.fit(pas[["Sex", "Year"]],pas[["PE_attendance"]])
+pat = pat[["Sex", "Year", "Race", "Grade"]]
+clf = tree.DecisionTreeClassifier(criterion = "entropy")
+clf.fit(pas[["Sex", "Year", "Race", "Grade"]],pas[["PE_attendance"]])
 returnAcc = clf.predict(pat)
 accuracy = (np.sum((returnAcc > 5) == (paty.values.flatten() > 5))/len(paty))*100
 print(accuracy)
 
-ads = ad.sample(150000)
-adt = ad.drop(ads.index)
-adty = adt[["Abuse_catagory"]]
-adt = adt[["Sex", "Year", "Race", "Grade"]]
-clf = tree.DecisionTreeClassifier()
-clf.fit(ads[["Sex", "Year", "Race", "Grade"]],ads[["Abuse_catagory"]])
-returnAcc = clf.predict(adt)
-accuracy = (np.sum(returnAcc == adty.values.flatten())/len(adty))*100
-print(accuracy)
-
+#Predicting type of tobacco use
 tus = tu.sample(150000)
 tut = tu.drop(tus.index)
 tuty = tut[["Type_of_use"]]
 tut = tut[["Year", "State", "Topic","Sex", "Race"]]
-clf = tree.DecisionTreeClassifier()
+clf = tree.DecisionTreeClassifier(criterion = "entropy")
 clf.fit(tus[["Year", "State", "Topic","Sex", "Race"]],tus[["Type_of_use"]])
 returnAcc = clf.predict(tut)
 accuracy = (np.sum(returnAcc == tuty.values.flatten())/len(tuty))*100
 print(accuracy)
 
+#Predicting gender based of weight characteristics
 wcs = wc.sample(150000)
 wct = wc.drop(wcs.index)
 wcty = wct[["Sex"]]
 wct = wct[["Year", "State", "Actual_description", "Race"]]
-clf = tree.DecisionTreeClassifier()
+clf = tree.DecisionTreeClassifier(criterion = "entropy")
 clf.fit(wcs[["Year", "State", "Actual_description", "Race"]],wcs[["Sex"]])
 returnAcc = clf.predict(wct)
 accuracy = (np.sum((returnAcc == 1) == (wcty.values.flatten()==1))/len(wcty))*100
 print(accuracy)
-#Lets add some more feautres that might be useful.
-#TODO
+
+#Alcohol and Drug Abuse Category Decision Tree
+#Predict whether student is more succeptable to 
+#drug or alcohol use based on other attributes
+#Brute force random sampling with Entropy Hueristic
+ads = ad.sample(150000)
+adt = ad.drop(ads.index)
+adty = adt[["Abuse_catagory"]]
+adt = adt[["Sex", "Year", "Race", "Grade"]]
+adt_train, adt_test, adty_train, adty_test = train_test_split(adt, adty, random_state=1)
+clfe = tree.DecisionTreeClassifier(criterion = "entropy")
+clfe.fit(adt_train, adty_train)
+adty_predict = clfe.predict(adt_test)
+accuracy = accuracy_score(adty_test, adty_predict)
+print(accuracy)
+
+#The negative Alcohol labels are more than 2x less than 
+#the drug use labels
+#We need a balanced sample
+ad_count = ad.groupby('Abuse_catagory')
+ad_count.describe()
+
+#Method 1 of handling unbalanced data
+#Take random sampling of majority class so the two class counts are even
+majority = ad[ad.Abuse_catagory==0]
+minority = ad[ad.Abuse_catagory==1]
+majority_downsampled = resample(majority, n_samples=716153, random_state=123)
+downsampled = pd.concat([majority_downsampled, minority])
+downsampled.groupby('Abuse_catagory').describe()
+
+#Rerun Decision Tree with balanced data from downsampling
+ads = downsampled.sample(1000000)
+adt = ad.drop(ads.index)
+adty = adt[["Abuse_catagory"]]
+adt = adt[["Sex", "Year", "Race", "Grade"]]
+adt_train, adt_test, adty_train, adty_test = train_test_split(adt, adty, random_state=1)
+clfe2 = tree.DecisionTreeClassifier(criterion = "entropy")
+clfe2.fit(adt_train, adty_train)
+adty_predict = clfe2.predict(adt_test)
+accuracy = accuracy_score(adty_test, adty_predict)
+print(accuracy)
+
+#Method 2 of handling unbalanced data
+#Use the AUROC performance metric instead of Accuracy
+# On brute force tree
+prob_y_2 = clfe.predict_proba(adt_train)
+prob_y_2 = [p[1] for p in prob_y_2]
+print(roc_auc_score(adty_train, prob_y_2))
+
+#Use the AUROC performance metric instead of Accuracy
+#on the balanced data
+prob_y_2 = clfe2.predict_proba(adt_train)
+prob_y_2 = [p[1] for p in prob_y_2]
+print(roc_auc_score(adty_train, prob_y_2))
+
+# Lets perform the same process using:
+#Brute force random sampling with Gini Impurity Hueristic
+ads = ad.sample(150000)
+adt = ad.drop(ads.index)
+adty = adt[["Abuse_catagory"]]
+adt = adt[["Sex", "Year", "Race", "Grade"]]
+adt_train, adt_test, adty_train, adty_test = train_test_split(adt, adty, random_state=1)
+clfg = tree.DecisionTreeClassifier(criterion = "gini")
+clfg.fit(adt_train, adty_train)
+adty_predict = clfg.predict(adt_test)
+accuracy = accuracy_score(adty_test, adty_predict)
+print(accuracy)
+
+#Method 1 of handling unbalanced data
+#Take random sampling of majority class so the two class counts are even
+majority = ad[ad.Abuse_catagory==0]
+minority = ad[ad.Abuse_catagory==1]
+ 
+majority_downsampled = resample(majority, n_samples=716153, random_state=123)
+downsampled = pd.concat([majority_downsampled, minority])
+downsampled.groupby('Abuse_catagory').describe()
+#Rerun Decision Tree with balanced data from downsampling
+ads = downsampled.sample(1000000)
+adt = ad.drop(ads.index)
+adty = adt[["Abuse_catagory"]]
+adt = adt[["Sex", "Year", "Race", "Grade"]]
+adt_train, adt_test, adty_train, adty_test = train_test_split(adt, adty, random_state=1)
+clfg2 = tree.DecisionTreeClassifier(criterion = "gini")
+clfg2.fit(adt_train, adty_train)
+adty_predict = clfg2.predict(adt_test)
+accuracy = accuracy_score(adty_test, adty_predict)
+print(accuracy)
+
+#Method 2 of handling unbalanced data
+#Use the AUROC performance metric instead of Accuracy
+# On brute force tree
+prob_y_2 = clfg.predict_proba(adt_train)
+prob_y_2 = [p[1] for p in prob_y_2]
+print(roc_auc_score(adty_train, prob_y_2))
+
+#Use the AUROC performance metric instead of Accuracy
+#on the balanced data
+prob_y_2 = clfg2.predict_proba(adt_train)
+prob_y_2 = [p[1] for p in prob_y_2]
+print(roc_auc_score(adty_train, prob_y_2))
+
+
+#Now we are going to use the Bagging method with our decision tree classifiers
+#For 100 trees created from our dataset
+#Balanced data and entropy hueristic
+kfold = model_selection.KFold(n_splits=5)
+num_trees = 100
+model = BaggingClassifier(base_estimator=clfe2, n_estimators=num_trees, random_state=seed)
+results = model_selection.cross_val_score(model, adt_train, adty_train, cv=kfold)
+print("Max: " + str(results.max()) + " Mean: " + str(results.mean()))
+
+# COMMAND ----------
+
+#Now we are going to use the Bagging method with our decision tree classifiers
+#For 100 trees created from our dataset
+#Balanced data and gini impurity heuristic
+kfold = model_selection.KFold(n_splits=5)
+num_trees = 100
+model = BaggingClassifier(base_estimator=clfg2, n_estimators=num_trees, random_state=seed)
+results = model_selection.cross_val_score(model, adt_train, adty_train, cv=kfold)
+print(results.max())
+print("Max: " + str(results.max()) + " Mean: " + str(results.mean()))
+
+#Now we are going to use the Bagging method with our decision tree classifiers
+#For 100 trees created from our dataset
+#Balanced data and entropy hueristic
+kfold = model_selection.KFold(n_splits=10)
+num_trees = 100
+model = BaggingClassifier(base_estimator=clfe2, n_estimators=num_trees, random_state=seed)
+results = model_selection.cross_val_score(model, adt_train, adty_train, cv=kfold)
+print("Max: " + str(results.max()) + " Mean: " + str(results.mean()))
+
+# COMMAND ----------
+
+#Now we are going to use the Bagging method with our decision tree classifiers
+#For 100 trees created from our dataset
+#Balanced data and gini impurity heuristic
+kfold = model_selection.KFold(n_splits=10)
+num_trees = 100
+model = BaggingClassifier(base_estimator=clfg2, n_estimators=num_trees, random_state=seed)
+results = model_selection.cross_val_score(model, adt_train, adty_train, cv=kfold)
+print(results.max())
+print("Max: " + str(results.max()) + " Mean: " + str(results.mean()))
+
+
