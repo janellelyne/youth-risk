@@ -133,80 +133,178 @@ ad = ad.apply(LabelEncoder().fit_transform)
 tu = tu.apply(LabelEncoder().fit_transform)
 wc = wc.apply(LabelEncoder().fit_transform)
 
-payg = pa[["Year", "Grade"]]
-kmeans = KMeans(n_clusters=2)
+payg = pa[["Year", "PE_attendance"]]
+kmeans = KMeans(n_clusters=4)
 kmeans.fit(payg)
 print(kmeans.cluster_centers_)
-kmeans = KMeans(n_clusters=10)
-kmeans.fit(payg)
-print(kmeans.cluster_centers_)
+labels = kmeans.predict(payg)
+kmeans = pd.DataFrame(labels)
+payg.insert((payg.shape[1]),'kmeans',kmeans)
 
-adyg = ad[["Year", "Grade"]]
-kmeans = KMeans(n_clusters=2)
+figure = plt.figure()
+ax = figure.add_subplot(111)
+scatter = ax.scatter(payg['Year'],payg['PE_attendance'], c=kmeans[0])
+ax.set_xlabel('Year')
+ax.set_ylabel('Physical_activity')
+plt.colorbar(scatter)
+display(figure)
+
+adyg = ad[["Year", "Abuse_type"]]
+kmeans = KMeans(n_clusters=4)
 kmeans.fit(adyg)
 print(kmeans.cluster_centers_)
-kmeans = KMeans(n_clusters=10)
-kmeans.fit(adyg)
-print(kmeans.cluster_centers_)
+labels = kmeans.predict(adyg)
+kmeans = pd.DataFrame(labels)
+adyg.insert((adyg.shape[1]),'kmeans',kmeans)
 
-tuyg = tu[["Year", "Grade"]]
-kmeans = KMeans(n_clusters=2)
+#Plot the clusters obtained using k means
+figure = plt.figure()
+ax = figure.add_subplot(111)
+scatter = ax.scatter(adyg['Year'],adyg['Abuse_type'], c=kmeans[0])
+ax.set_xlabel('Year')
+ax.set_ylabel('Abuse_type')
+plt.colorbar(scatter)
+display(figure)
+
+
+tuyg = tu[["Year", "Usage_frequency"]]
+kmeans = KMeans(n_clusters=4)
 kmeans.fit(tuyg)
 print(kmeans.cluster_centers_)
-kmeans = KMeans(n_clusters=10)
-kmeans.fit(tuyg)
-print(kmeans.cluster_centers_)
+labels = kmeans.predict(tuyg)
+kmeans = pd.DataFrame(labels)
+tuyg.insert((tuyg.shape[1]),'kmeans',kmeans)
 
-wcyg = wc[["Year", "Grade"]]
-kmeans = KMeans(n_clusters=2)
+#Plot the clusters obtained using k means
+figure = plt.figure()
+ax = figure.add_subplot(111)
+scatter = ax.scatter(tuyg['Year'],tuyg['Usage_frequency'], c=kmeans[0])
+ax.set_xlabel('Year')
+ax.set_ylabel('Usage_frequency')
+plt.colorbar(scatter)
+display(figure)
+
+
+wcyg = wc[["Year", "State"]]
+kmeans = KMeans(n_clusters=4)
 kmeans.fit(wcyg)
 print(kmeans.cluster_centers_)
-kmeans = KMeans(n_clusters=10)
-kmeans.fit(wcyg)
-print(kmeans.cluster_centers_)
+labels = kmeans.predict(wcyg)
+kmeans = pd.DataFrame(labels)
+wcyg.insert((wcyg.shape[1]),'kmeans',kmeans)
 
+#Plot the clusters obtained using k means
+figure = plt.figure()
+ax = figure.add_subplot(111)
+scatter = ax.scatter(wcyg['Year'],wcyg['State'], c=kmeans[0])
+ax.set_xlabel('Year')
+ax.set_ylabel('State')
+plt.colorbar(scatter)
+display(figure)
+
+payg = pa[["Year", "PE_attendance"]]
 paygsample = payg.sample(100)
-agglo = AgglomerativeClustering(n_clusters=2)
-agglo.fit(paygsample)
-print(agglo.labels_)
+agglo = AgglomerativeClustering(n_clusters=4)
+labels = agglo.fit_predict(paygsample)
+agglo = pd.DataFrame(labels)
+paygsample.insert((paygsample.shape[1]),'agglo',agglo)
 
+#Plot the clusters obtained using agglo
+figure = plt.figure()
+ax = figure.add_subplot(111)
+scatter = ax.scatter(paygsample['Year'],paygsample['PE_attendance'], c=agglo[0])
+ax.set_xlabel('Year')
+ax.set_ylabel('Physical_activity')
+plt.colorbar(scatter)
+display(figure)
 
-agglo = AgglomerativeClustering(n_clusters=10)
-agglo.fit(paygsample)
-print(agglo.labels_)
-
+adyg = ad[["Year", "Abuse_type"]]
 adygsample = adyg.sample(100)
-agglo = AgglomerativeClustering(n_clusters=2)
-agglo.fit(adygsample)
-print(agglo.labels_)
-agglo = AgglomerativeClustering(n_clusters=10)
-agglo.fit(adygsample)
-print(agglo.labels_)
+agglo = AgglomerativeClustering(n_clusters=4)
+labels = agglo.fit_predict(adygsample)
+agglo = pd.DataFrame(labels)
+adygsample.insert((adygsample.shape[1]),'agglo',agglo)
 
+#Plot the clusters obtained using agglo
+figure = plt.figure()
+ax = figure.add_subplot(111)
+scatter = ax.scatter(adygsample['Year'],adygsample['Abuse_type'], c=agglo[0])
+ax.set_xlabel('Year')
+ax.set_ylabel('Abuse_type')
+plt.colorbar(scatter)
+display(figure)
+
+tuyg = tu[["Year", "Usage_frequency"]]
 tuygsample = tuyg.sample(100)
-agglo = AgglomerativeClustering(n_clusters=2)
-agglo.fit(tuygsample)
-print(agglo.labels_)
-agglo = AgglomerativeClustering(n_clusters=10)
-agglo.fit(tuygsample)
-print(agglo.labels_)
+agglo = AgglomerativeClustering(n_clusters=4)
+labels = agglo.fit_predict(tuygsample)
+agglo = pd.DataFrame(labels)
+tuygsample.insert((tuygsample.shape[1]),'agglo',agglo)
 
+#Plot the clusters obtained using agglo
+figure = plt.figure()
+ax = figure.add_subplot(111)
+scatter = ax.scatter(tuygsample['Year'],tuygsample['Usage_frequency'], c=agglo[0])
+ax.set_xlabel('Year')
+ax.set_ylabel('Usage_frequency')
+plt.colorbar(scatter)
+display(figure)
+
+wcyg = wc[["Year", "State"]]
 wcygsample = wcyg.sample(100)
-agglo = AgglomerativeClustering(n_clusters=2)
+agglo = AgglomerativeClustering(n_clusters=4)
 agglo.fit(wcygsample)
-print(agglo.labels_)
-agglo = AgglomerativeClustering(n_clusters=10)
-agglo.fit(wcygsample)
-print(agglo.labels_)
+labels = agglo.fit_predict(wcygsample)
+agglo = pd.DataFrame(labels)
+wcygsample.insert((wcygsample.shape[1]),'agglo',agglo)
 
+#Plot the clusters obtained using agglo
+figure = plt.figure()
+ax = figure.add_subplot(111)
+scatter = ax.scatter(wcygsample['Year'],wcygsample['State'], c=agglo[0])
+ax.set_xlabel('Year')
+ax.set_ylabel('State')
+plt.colorbar(scatter)
+display(figure)
 
-pas = pa.sample(200000)
+pas = pa.sample(150000)
 pat = pa.drop(pas.index)
-pat = pat[["Year", "State", "Sex", "Race", "Grade"]]
+paty = pat[["PE_attendance"]]
+pat = pat[["Sex", "Year"]]
 clf = tree.DecisionTreeClassifier()
-clf.fit(pas[["Year", "State", "Sex", "Race", "Grade"]],pas[['PE_attendance']])
+clf.fit(pas[["Sex", "Year"]],pas[["PE_attendance"]])
 returnAcc = clf.predict(pat)
-accuracy = (np.sum(returnAcc == paty.values.flatten())/len(paty))*100
+accuracy = (np.sum((returnAcc > 5) == (paty.values.flatten() > 5))/len(paty))*100
+print(accuracy)
+
+ads = ad.sample(150000)
+adt = ad.drop(ads.index)
+adty = adt[["Abuse_catagory"]]
+adt = adt[["Sex", "Year", "Race", "Grade"]]
+clf = tree.DecisionTreeClassifier()
+clf.fit(ads[["Sex", "Year", "Race", "Grade"]],ads[["Abuse_catagory"]])
+returnAcc = clf.predict(adt)
+accuracy = (np.sum(returnAcc == adty.values.flatten())/len(adty))*100
+print(accuracy)
+
+tus = tu.sample(150000)
+tut = tu.drop(tus.index)
+tuty = tut[["Type_of_use"]]
+tut = tut[["Year", "State", "Topic","Sex", "Race"]]
+clf = tree.DecisionTreeClassifier()
+clf.fit(tus[["Year", "State", "Topic","Sex", "Race"]],tus[["Type_of_use"]])
+returnAcc = clf.predict(tut)
+accuracy = (np.sum(returnAcc == tuty.values.flatten())/len(tuty))*100
+print(accuracy)
+
+wcs = wc.sample(150000)
+wct = wc.drop(wcs.index)
+wcty = wct[["Sex"]]
+wct = wct[["Year", "State", "Actual_description", "Race"]]
+clf = tree.DecisionTreeClassifier()
+clf.fit(wcs[["Year", "State", "Actual_description", "Race"]],wcs[["Sex"]])
+returnAcc = clf.predict(wct)
+accuracy = (np.sum((returnAcc == 1) == (wcty.values.flatten()==1))/len(wcty))*100
 print(accuracy)
 #Lets add some more feautres that might be useful.
 #TODO
