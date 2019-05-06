@@ -24,10 +24,10 @@ alpha = 0.7
 
 #Loading the .csv files into dataframes
 #[Note] Replace paths with local directory 
-alch_drug_csv = pd.read_csv("/dbfs/FileStore/tables/AlcoholUse.csv")
-phys_act_csv = pd.read_csv("/dbfs/FileStore/tables/PhysicalActivity.csv")
-tobacco_use_csv = pd.read_csv("/dbfs/FileStore/tables/TabaccoUse.csv")
-weight_ctrl_csv = pd.read_csv("/dbfs/FileStore/tables/WeightControl.csv")
+alch_drug_csv = pd.read_csv("AlcoholUse.csv")
+phys_act_csv = pd.read_csv("PhysicalActivity.csv")
+tobacco_use_csv = pd.read_csv("TabaccoUse.csv")
+weight_ctrl_csv = pd.read_csv("WeightControl.csv")
 
 
 #Restrict datasets to features we want to analyze. 

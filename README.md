@@ -1,5 +1,17 @@
-# youth-risk
-Machine Learning Project on Youth Risk Behavior
+How to Run:
 
-Relations between different youth risk behaviors, and what that means for our society and our youth.
+python youth_risk.python
 
+
+Dependencies:
+AlcoholUse.csv
+PhysicalActivity.csv
+TabaccoUse.csv
+WeightControl.csv
+
+Libraries:
+sklearn
+numpy
+pandas
+matplotlib
+seaborn
